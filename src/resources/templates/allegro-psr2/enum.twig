@@ -1,0 +1,31 @@
+<?php
+
+{% if namespace %}
+namespace {{ namespace }};
+{% endif %}
+
+/**
+ * THIS IS A GENERATED CLASS. DO NOT EDIT.
+ *
+ * generated from {{ sourceFilename }}
+ */
+class {{ enum.name }}
+{
+{% for field in enum.values %}
+    const {{ field.name }} = {{ field.id }};
+{% endfor %}
+
+    /**
+     * @return int[] map of enum name to ID.
+     */
+    public function getEnumValues()
+    {
+        return [
+{% for field in enum.values %}
+            '{{ field.name }}' => {{ field.id }},
+{% endfor %}
+        ];
+    }
+
+    const _CLASS = __CLASS__;
+}

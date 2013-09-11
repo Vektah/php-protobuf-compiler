@@ -1,0 +1,95 @@
+<?php
+
+{% if namespace %}
+namespace {{ namespace }};
+
+{% endif %}
+use ProtobufMessage;
+{% for use in uses %}
+use {{ use }};
+{% endfor %}
+
+/**
+ * THIS IS A GENERATED CLASS. DO NOT EDIT.
+ *
+ * generated from {{ sourceFilename }}
+ *
+{% for field in message.fields %}
+ * @property {{ field.phpType }} ${{ field.identifier }}
+{% endfor %}
+ */
+class {{ message.name }} extends ProtobufMessage
+{
+    public $values = [];
+
+    /* @var array This is passed off to the base ProtobufMessage class in getFields. */
+    protected static $fields = [
+{% for field in message.fields %}
+        {{ field.index }} => [
+            'name' => '{{ field.identifier }}',
+            'required' => {{ field.required }},
+            'type' => {{ field.allegroType }},
+{% if field.default %}
+            'default' => {{ field.default }},
+{% endif %}
+        ],
+{% endfor %}
+    ];
+
+    protected static $propToId = [
+{% for field in message.fields %}
+        '{{ field.identifier }}' => {{ field.index }},
+{% endfor %}
+    ];
+
+    /**
+     * Constructs new message container and initializes the default state
+     */
+    public function __construct()
+    {
+        $this->clear();
+    }
+
+    /**
+     * Clears message values and sets default ones
+     *
+     * @return null
+     */
+    public function clear()
+    {
+        foreach (self::$fields as $id => $field) {
+            $this->values[$id] = isset($field['default']) ? $field['default'] : null;
+        }
+    }
+
+    /**
+     * Returns field descriptors
+     *
+     * @return array
+     */
+    public function getFields()
+    {
+        return self::$fields;
+    }
+
+    /**
+     * Magic getter
+     *
+     * @param string $prop the param name being retreived
+     */
+    public function __get($prop) {
+        return $this->getValue(self::$propToId[$prop]);
+    }
+
+    /**
+     * Magic setter
+     *
+     * @param string $prop the param name being set
+     * @param mixed $value the new value
+     */
+    public function __set($prop, $value) {
+        $this->setValue(self::$propToId[$prop], $value);
+    }
+
+    const _CLASS = __CLASS__;
+}

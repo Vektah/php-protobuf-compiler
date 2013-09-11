@@ -1,0 +1,23 @@
+#!/usr/bin/php
+<?php
+
+
+// Allows running both from bin and vendor/bin, and nearly anywhere the user may map this to within their project
+use vektah\protobuf\compiler\cli\Application;
+
+$files =  [
+    __DIR__ . "/../vendor/autoload.php",
+    __DIR__ . "/../../vendor/autoload.php",
+    __DIR__ . "/../../../vendor/autoload.php",
+    __DIR__ . "/../../../../vendor/autoload.php",
+];
+
+foreach ($files as $file) {
+    if (file_exists($file)) {
+        require_once($file);
+        break;
+    }
+}
+
+$application = new Application();
+$application->run();

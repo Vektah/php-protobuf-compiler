@@ -1,0 +1,26 @@
+{
+    "name": "vektah/php-protobuf-compiler",
+    "description": "Compiles .proto files into PSR-2 compliant .php files",
+
+    "autoload": {
+        "psr-0": {
+            "vektah\\protobuf\\compiler": "src/main"
+        }
+    },
+
+    "require": {
+        "php": ">=5.4.0",
+        "ext-protobuf": "*",
+        "symfony/console": "*",
+        "vektah/parser-combinator": "dev-master",
+        "twig/twig" : "*"
+    },
+
+    "require-dev": {
+        "phpunit/phpunit": "3.7.21",
+        "symfony/process": "*",
+        "phake/phake": "2.0.0-alpha2",
+        "squizlabs/php_codesniffer" : "1.4.5",
+        "vektah/bugfree-dangerzone": "0.2.6"
+    }
+}
