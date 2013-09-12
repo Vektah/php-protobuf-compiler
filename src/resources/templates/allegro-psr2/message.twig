@@ -77,7 +77,8 @@ class {{ message.name }} extends ProtobufMessage
      *
      * @param string $prop the param name being retreived
      */
-    public function __get($prop) {
+    public function __get($prop)
+    {
         return $this->getValue(self::$propToId[$prop]);
     }
 
@@ -87,7 +88,8 @@ class {{ message.name }} extends ProtobufMessage
      * @param string $prop the param name being set
      * @param mixed $value the new value
      */
-    public function __set($prop, $value) {
+    public function __set($prop, $value)
+    {
         $this->setValue(self::$propToId[$prop], $value);
     }
 

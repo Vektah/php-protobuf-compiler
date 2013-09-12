@@ -23,23 +23,43 @@ abstract class ProtobufMessage
      */
     abstract public function getFields();
 
-    public function getValue($id) {
+    /**
+     * @param int $id
+     *
+     * @return mixed
+     */
+    public function getValue($id)
+    {
         // Native code
     }
 
-    public function setValue($id) {
+    /**
+     * @param int $id
+     * @param mixed $value
+     */
+    public function setValue($id, $value)
+    {
         // Native code
     }
 
-    public function getCount() {
+    /**
+     * @return int
+     */
+    public function getCount()
+    {
         // Native code
     }
 
-    public function parseFromString($string) {
+    /**
+     * @param string $string
+     */
+    public function parseFromString($string)
+    {
         // Native code
     }
 
-    public function serializeToString() {
+    public function serializeToString()
+    {
         // Native code
     }
 }

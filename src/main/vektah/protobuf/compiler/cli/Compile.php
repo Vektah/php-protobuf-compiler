@@ -21,6 +21,7 @@ class Compile extends Command
         $this->addOption('out', null, InputOption::VALUE_OPTIONAL, "The directory to generate files in", '.');
         $this->addOption('input_dir', 'I', InputOption::VALUE_OPTIONAL, 'The directory to ready .proto files from', '.');
         $this->addOption('namespace', 'N', InputOption::VALUE_OPTIONAL, 'The base namespace for all compiled files, separated by \\', '');
+        $this->addOption('template_dir', 'T', InputOption::VALUE_OPTIONAL, 'The name of the directory containing the source templates.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -29,12 +30,13 @@ class Compile extends Command
         $inputDir = $this->checkPath($input->getOption('input_dir'));
         $outputDir = $this->checkPath($input->getOption('out'));
         $namespace = explode('\\', $input->getOption('namespace'));
+        $templateDir = $input->getOption('template_dir');
 
         if ($namespace[0] == '') {
             $namespace = [];
         }
 
-        $compiler = new Compiler($inputDir, $outputDir, $namespace);
+        $compiler = new Compiler($inputDir, $outputDir, $namespace, $templateDir);
 
         $compiler->compile($file);
     }
