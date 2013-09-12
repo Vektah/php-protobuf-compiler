@@ -7,7 +7,8 @@ use vektah\parser_combinator\exception\ParseException;
 /**
  * Resolves types within a compile.
  */
-class Resolver {
+class Resolver
+{
     private $definitions = [];
 
     private $baseNamespace;

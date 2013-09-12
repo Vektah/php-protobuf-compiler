@@ -1,10 +1,12 @@
 <?php
+// @codingStandardsIgnoreFile
 
 /**
  * This file should not be included in any auto loaded path, its purpose is only to document the public interface
  * of the allegro protobuf c extension.
  */
-abstract class ProtobufMessage {
+abstract class ProtobufMessage
+{
     protected $values;
 
     const PB_TYPE_DOUBLE = 1;

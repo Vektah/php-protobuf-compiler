@@ -1,12 +1,15 @@
 <?php
 
+namespace vektah\protobuf\compiler;
+
 use PHPUnit_Framework_TestCase as TestCase;
 use Symfony\Component\Process\Process;
 
-class GenerationTest extends TestCase {
+class GenerationTest extends TestCase
+{
     /** @var  Process the compile process that ran before this test. */
-    static $compile;
-    static $tmpdir;
+    private static $compile;
+    private static $tmpdir;
 
     public static function setUpBeforeClass()
     {

@@ -39,7 +39,8 @@ class Compile extends Command
         $compiler->compile($file);
     }
 
-    private function checkPath($path) {
+    private function checkPath($path)
+    {
         if (!file_exists($path)) {
             mkdir($path);
         } elseif (!is_dir($path)) {

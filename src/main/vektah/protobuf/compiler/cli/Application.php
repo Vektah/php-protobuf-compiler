@@ -5,7 +5,8 @@ namespace vektah\protobuf\compiler\cli;
 use Symfony\Component\Console\Application as SymfonyApplication;
 use vektah\protobuf\compiler\Compiler;
 
-class Application extends SymfonyApplication {
+class Application extends SymfonyApplication
+{
     public function __construct()
     {
         parent::__construct();

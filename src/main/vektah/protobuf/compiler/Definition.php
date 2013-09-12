@@ -2,14 +2,15 @@
 
 namespace vektah\protobuf\compiler;
 
-class Definition {
+class Definition
+{
     /** @var array */
     public $name;
 
     /** @var mixed */
     public $definition;
 
-    function __construct(array $name, $definition = null)
+    public function __construct(array $name, $definition = null)
     {
         $this->name = $name;
         $this->definition = $definition;
