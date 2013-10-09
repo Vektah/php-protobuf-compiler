@@ -18,29 +18,42 @@ use {{ use }};
  * @property {{ field.phpType }} ${{ field.identifier }}
 {% endfor %}
  */
-class {{ message.name }} extends ProtobufMessage
+class {{ message.name }} extends {% if base %}{{ base.name }}{% else %}ProtobufMessage{% endif %}
 {
     public $values = [];
 
-    /* @var array This is passed off to the base ProtobufMessage class in getFields. */
-    protected static $fields = [
-{% for field in message.fields %}
-        {{ field.index }} => [
-            'name' => '{{ field.identifier }}',
-            'required' => {{ field.required }},
-            'type' => {{ field.allegroType }},
-{% if field.default %}
-            'default' => {{ field.default }},
-{% endif %}
-        ],
-{% endfor %}
-    ];
+    /** @var array lazy loaded field details built from buildFields() **/
+    private $fields;
 
-    protected static $propToId = [
+    /** @var array lazy loaded properties built from $fields. **/
+    private $propToId;
+
+    /** @return array This is passed off to the base ProtobufMessage class in getFields. */
+    protected static function buildFields()
+    {
+        $data = [
 {% for field in message.fields %}
-        '{{ field.identifier }}' => {{ field.index }},
+            {{ field.index }} => [
+                'name' => '{{ field.identifier }}',
+                'type' => {{ field.allegroType }},
+{% if field.repeated %}
+                'repeated' => {{ field.repeated }},
+{% else %}
+                'required' => {{ field.required }},
+{% endif %}
+{% if field.default %}
+                'default' => {{ field.default }},
+{% endif %}
+            ],
 {% endfor %}
-    ];
+        ];
+
+{% if base %}
+        return array_merge(parent::buildFields(), $data);
+{% else %}
+        return $data;
+{% endif %}
+    }
 
     /**
      * Constructs new message container and initializes the default state
@@ -51,14 +64,39 @@ class {{ message.name }} extends ProtobufMessage
     }
 
     /**
+     * @param string $prop the name of the property
+     * @return int id of the named property
+     */
+    protected function propToId($prop)
+    {
+        if (!$this->propToId) {
+            $this->propToId = [];
+
+            foreach ($this->getFields() as $id => $field) {
+                $this->propToId[$field['name']] = $id;
+            }
+        }
+
+        if (!isset($this->propToId[$prop])) {
+            return null;
+        }
+
+        return $this->propToId[$prop];
+    }
+
+    /**
      * Clears message values and sets default ones
      *
      * @return null
      */
     public function clear()
     {
-        foreach (self::$fields as $id => $field) {
-            $this->values[$id] = isset($field['default']) ? $field['default'] : null;
+        foreach ($this->getFields() as $id => $field) {
+            if (isset($field['repeated'])) {
+                $this->values[$id] = [];
+            } else {
+                $this->values[$id] = isset($field['default']) ? $field['default'] : null;
+            }
         }
     }
 
@@ -69,17 +107,23 @@ class {{ message.name }} extends ProtobufMessage
      */
     public function getFields()
     {
-        return self::$fields;
+        if (!$this->fields) {
+            $this->fields = static::buildFields();
+        }
+
+        return $this->fields;
     }
 
     /**
      * Magic getter
      *
      * @param string $prop the param name being retreived
+     *
+     * @return mixed
      */
     public function __get($prop)
     {
-        return $this->getValue(self::$propToId[$prop]);
+        return $this->getValue($this->propToId($prop));
     }
 
     /**
@@ -90,7 +134,27 @@ class {{ message.name }} extends ProtobufMessage
      */
     public function __set($prop, $value)
     {
-        $this->setValue(self::$propToId[$prop], $value);
+        $id = $this->propToId($prop);
+
+        if (is_array($value)) {
+            $this->clearValues($id);
+            foreach ($value as $element) {
+                $this->appendValue($id, $element);
+            }
+        } else {
+            $this->setValue($id, $value);
+        }
+    }
+
+    /**
+     * Checks if a property is set
+     *
+     * @param string $prop the param name being checked
+     * @return bool true if the property exists
+     */
+    public function __isset($prop)
+    {
+        return $this->propToId($prop) !== null;
     }
 
     const _CLASS = __CLASS__;

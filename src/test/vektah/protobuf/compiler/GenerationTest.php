@@ -2,6 +2,7 @@
 
 namespace vektah\protobuf\compiler;
 
+use Exception;
 use PHPUnit_Framework_TestCase as TestCase;
 use Symfony\Component\Process\Process;
 
@@ -43,6 +44,10 @@ class GenerationTest extends TestCase
 
         self::$compile = new Process(__DIR__ . "/../../../../../bin/pprotoc compile $dir/test.proto --out=$dir/out --namespace 'testns'");
         self::$compile->run();
+
+        if (self::$compile->getExitCode()) {
+            throw new Exception(self::$compile->getErrorOutput());
+        }
 
         require_once("$dir/out/testns/SearchRequest.php");
         require_once("$dir/out/testns/searchrequest/PageDetails.php");
@@ -88,6 +93,9 @@ class GenerationTest extends TestCase
         $unpacked = new \testns\SearchRequest();
         $unpacked->parseFromString($string);
 
-        $this->assertEquals($request, $unpacked);
+        $this->assertEquals($request->query, $unpacked->query);
+        $this->assertEquals($request->page_details->number, $unpacked->page_details->number);
+        $this->assertEquals($request->page_details->result_per_page, $unpacked->page_details->result_per_page);
+        $this->assertEquals($request->corpus, $unpacked->corpus);
     }
 }

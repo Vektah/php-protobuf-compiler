@@ -35,10 +35,25 @@ abstract class ProtobufMessage
 
     /**
      * @param int $id
-     * @param mixed $value
+     * @param string $value
      */
     public function setValue($id, $value)
     {
+        // Native code
+    }
+
+    /**
+     * @param int $id
+     * @param string $value
+     */
+    public function appendValue($id, $value) {
+        // Native code
+    }
+
+    /**
+     * @param int $id
+     */
+    public function clearValues($id) {
         // Native code
     }
 
@@ -52,12 +67,17 @@ abstract class ProtobufMessage
 
     /**
      * @param string $string
+     *
+     * @return bool success, If true is not returned the parse will be halted.
      */
     public function parseFromString($string)
     {
         // Native code
     }
 
+    /**
+     * @return string
+     */
     public function serializeToString()
     {
         // Native code
