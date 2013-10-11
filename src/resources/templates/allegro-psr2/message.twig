@@ -123,6 +123,11 @@ class {{ message.name }} extends {% if base %}{{ base.name }}{% else %}ProtobufM
      */
     public function __get($prop)
     {
+        $id = $this->propToId($prop);
+        if ($id === null) {
+            throw new \InvalidArgumentException('$prop is not a valid field, valid fields are: [' . implode(', ', array_keys($this->propToId)) . ']');
+        }
+
         return $this->getValue($this->propToId($prop));
     }
 
