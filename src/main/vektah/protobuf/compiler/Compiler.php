@@ -24,25 +24,6 @@ class Compiler
     private $outputDir;
     private $resolver;
 
-    private static $allegroTypeMap = [
-        'double' => 'ProtobufMessage::PB_TYPE_DOUBLE',
-        'float' => 'ProtobufMessage::PB_TYPE_FLOAT',
-        'int32' => 'ProtobufMessage::PB_TYPE_INT',
-        'int64' => 'ProtobufMessage::PB_TYPE_INT',
-        'uint32' => 'ProtobufMessage::PB_TYPE_INT',
-        'uint64' => 'ProtobufMessage::PB_TYPE_INT',
-        'sint32' => 'ProtobufMessage::PB_TYPE_SIGNED_INT',
-        'sint64' => 'ProtobufMessage::PB_TYPE_SIGNED_INT',
-        'fixed32' => 'ProtobufMessage::PB_TYPE_FIXED32',
-        'fixed64' => 'ProtobufMessage::PB_TYPE_FIXED64',
-        'sfixed32' => 'ProtobufMessage::PB_TYPE_FIXED32',
-        'sfixed64' => 'ProtobufMessage::PB_TYPE_FIXED64',
-        'bool' => 'ProtobufMessage::PB_TYPE_BOOL',
-        'string' => 'ProtobufMessage::PB_TYPE_STRING',
-        'bytes' => 'ProtobufMessage::PB_TYPE_STRING',
-        'enum' => 'ProtobufMessage::PB_TYPE_INT'
-    ];
-
     private static $phpTypeMap = [
         'double' => 'float',
         'float' => 'float',
@@ -68,14 +49,13 @@ class Compiler
         $this->outputDir = $outputDir;
         $this->resolver = new Resolver($namespace);
 
-        $template_dir = $template_dir ? $template_dir : realpath(__DIR__ . '/../../../../resources/templates/allegro-psr2');
+        $template_dir = $template_dir ? $template_dir : realpath(__DIR__ . '/../../../../resources/templates/psr2');
         $twig_loader = new \Twig_Loader_Filesystem($template_dir);
         $twig = new \Twig_Environment($twig_loader);
 
         $this->templates = [
             'enum' => $twig->loadTemplate('enum.twig'),
-            'message' => $twig->loadTemplate('message.twig'),
-            'extended_message' => $twig->loadTemplate('extended_message.twig'),
+            'message' => $twig->loadTemplate('message.twig')
         ];
         $this->parser = new ProtoParser();
     }
@@ -158,7 +138,13 @@ class Compiler
                 $element = new Message($name, array_merge($extends->members));
             }
 
+            $seen_indexes = [];
+
             foreach ($element->fields as $field) {
+                if (isset($seen_indexes[$field->index])) {
+                    throw new \RuntimeException("Duplicate index {$field->index} in $sourceFilename");
+                }
+                $seen_indexes[$field->index] = true;
                 if ($field->default instanceof Identifier) {
                     $definition = $this->resolver->fetch($fieldNamespace, $field->type);
 
@@ -171,17 +157,18 @@ class Compiler
 
                 if (isset(self::$phpTypeMap[$field->type])) {
                     $field->phpType = self::$phpTypeMap[$field->type];
-                    $field->allegroType = self::$allegroTypeMap[$field->type];
+                    $field->protoType = 'Type::' . strtoupper($field->type);
                 } else {
                     // User types!
                     $type = $this->resolver->fetch($fieldNamespace, $field->type);
                     if ($type->definition instanceof Enum) {
                         $field->phpType = self::$phpTypeMap['enum'];
-                        $field->allegroType = self::$allegroTypeMap['enum'];
+                        $field->protoType = 'Type::INT32';
                     } else {
                         $uses[] = $type->getQualifiedName();
                         $field->phpType = $type->getShortName();
-                        $field->allegroType = $type->getShortName() . '::_CLASS';
+                        $field->protoType = $type->getShortName() . '::class';
+                        $field->typeHint = $type->getShortName() . ' ';
                     }
                 }
 
@@ -193,12 +180,14 @@ class Compiler
 
                 if ($field->label == 'repeated') {
                     $field->repeated = 'true';
+                    $field->typeHint = 'array ';
+                    $field->phpType = $field->phpType . '[]';
                 }
             }
 
             $uses = array_unique($uses);
 
-            $template = $base ? $this->templates['extended_message'] : $this->templates['message'];
+            $template = $this->templates['message'];
 
             $source = $template->render([
                 'message' => $element,

@@ -6,7 +6,7 @@ use Exception;
 use PHPUnit_Framework_TestCase as TestCase;
 use Symfony\Component\Process\Process;
 
-class GenerationTest extends TestCase
+class JsonGenerationTest extends TestCase
 {
     /** @var  Process the compile process that ran before this test. */
     private static $compile;
@@ -39,6 +39,8 @@ class GenerationTest extends TestCase
                 }
 
                 optional Corpus corpus = 3 [default = UNIVERSAL];
+
+                repeated int32 stuff = 4;
             }
         ');
 
@@ -74,28 +76,32 @@ class GenerationTest extends TestCase
     {
         echo self::$compile->getOutput();
         echo self::$compile->getErrorOutput();
-
+        echo file_get_contents(self::$tmpdir . "/out/testns/SearchRequest.php");
+        echo file_get_contents(self::$tmpdir . "/out/testns/SearchRequest.php");
+        echo file_get_contents(self::$tmpdir . "/out/testns/SearchRequest.php");
         throw $e;
     }
 
     public function testSimpleOutput()
     {
         $request = new \testns\SearchRequest();
-        $request->query = "asdf";
-        $request->page_details = new \testns\searchrequest\PageDetails();
-        $request->page_details->number = 10;
-        $request->page_details->result_per_page = 50;
-        $request->corpus = \testns\searchrequest\Corpus::NEWS;
+        $request->set_query("asdf");
+        $request->set_stuff([1, 2, 3, 4]);
+        $page_details = new \testns\searchrequest\PageDetails();
+        $page_details->set_number(10);
+        $page_details->set_result_per_page(50);
+        $request->set_page_details($page_details);
+        $request->set_corpus(\testns\searchrequest\Corpus::NEWS);
 
-        $string = $request->serializeToString();
+        $string = $request->toJson();
 
         $this->assertNotNull($string);
-        $unpacked = new \testns\SearchRequest();
-        $unpacked->parseFromString($string);
+        $unpacked = \testns\SearchRequest::fromJson($string);
 
-        $this->assertEquals($request->query, $unpacked->query);
-        $this->assertEquals($request->page_details->number, $unpacked->page_details->number);
-        $this->assertEquals($request->page_details->result_per_page, $unpacked->page_details->result_per_page);
-        $this->assertEquals($request->corpus, $unpacked->corpus);
+        $this->assertEquals($request->get_query(), $unpacked->get_query());
+        $this->assertEquals($request->get_page_details()->get_number(), $unpacked->get_page_details()->get_number());
+        $this->assertEquals($request->get_page_details()->get_result_per_page(), $unpacked->get_page_details()->get_result_per_page());
+        $this->assertEquals($request->get_corpus(), $unpacked->get_corpus());
+        $this->assertEquals([1, 2, 3, 4], $unpacked->get_stuff());
     }
 }

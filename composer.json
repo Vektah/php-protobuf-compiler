@@ -15,15 +15,15 @@
 
     "autoload": {
         "psr-0": {
-            "vektah\\protobuf\\compiler": "src/main"
+            "vektah\\protobuf": "src/main"
         }
     },
 
     "require": {
         "php": ">=5.4.0",
-        "ext-protobuf": "*",
         "symfony/console": "*",
         "vektah/parser-combinator": "0.2.*",
+		"vektah/common": "*",
         "twig/twig" : "*"
     },
 

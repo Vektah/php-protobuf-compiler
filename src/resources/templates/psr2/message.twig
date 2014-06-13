@@ -1,0 +1,87 @@
+<?php
+
+{% if namespace %}
+namespace {{ namespace }};
+
+{% endif %}
+use vektah\protobuf\runtime\Message;
+use vektah\protobuf\runtime\FieldMetadata;
+use vektah\protobuf\runtime\Type;
+{% for use in uses %}
+use {{ use }};
+{% endfor %}
+
+/**
+ * THIS IS A GENERATED CLASS. DO NOT EDIT.
+ *
+ * generated from {{ sourceFilename }}
+ *
+ */
+class {{ message.name }} extends {% if base %}{{ base.name }}{% else %}Message{% endif %} {
+
+    /** @var FieldMetadata[] keyed on field name **/
+    private static $metadata;
+
+    /** @var array id: int => name: string */
+    private static $id_to_field = [
+{% for field in message.fields %}
+        {{ field.index }} => '{{ field.identifier }}',
+{% endfor %}
+    ];
+
+{% for field in message.fields %}
+    /** @var {{ field.phpType }} ${{ field.identifier }} **/
+    protected ${{ field.identifier }}{% if field.default %} = {{ field.default }}{% endif %};
+
+{% endfor %}
+    /** @return array This is passed off to the base ProtobufMessage class in getFields. */
+    protected static function getMetadata() {
+        if (!isset(self::$metadata)) {
+{% if base %}
+            $metadata = {{ base }}::get_metadata();
+{% else %}
+            $metadata = [];
+{% endif %}
+
+{% for field in message.fields %}
+            $metadata['{{ field.identifier }}'] = FieldMetadata::create({{ field.index }}, '{{ field.identifier }}', {{ field.protoType }})
+{%- if field.repeated -%}
+                ->isRepeated({{ field.repeated }});
+{% else -%}
+                ->isRequired({{ field.required }});
+{% endif -%}
+{% endfor %}
+
+            self::$metadata = $metadata;
+        }
+
+        return self::$metadata;
+    }
+
+    /**
+     * @param int $id
+     * @return string name for field of id $id
+     */
+    protected static function getNameForID($id) {
+        if (!isset(self::$id_to_field[$id])) {
+            return null;
+        }
+        return self::$id_to_field[$id];
+    }
+{% for field in message.fields %}
+
+    /**
+     * @return {{ field.phpType }}
+     */
+    public function get_{{ field.identifier }}() {
+        return $this->{{ field.identifier }};
+    }
+
+    /**
+     * @param {{ field.phpType }} ${{ field.identifier }}
+     */
+    public function set_{{ field.identifier }}({{ field.typeHint }}${{ field.identifier }}{% if field.typeHint %} = null{% endif %}) {
+        $this->{{ field.identifier }} = Type::sanitize{{ field.repeated ? 'Repeated' }}({{ field.protoType }}, ${{ field.identifier }});
+    }
+{% endfor %}
+}
